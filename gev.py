@@ -191,7 +191,7 @@ class GEV:
             print('xi =', self.xi,'    ','[', self.xi-z_crit*np.sqrt(self.variance[0,0]), ',',self.xi+z_crit*np.sqrt(self.variance[0,0]), ']')
             print('mu =', self.mu,'    ','[', self.mu-z_crit*np.sqrt(self.variance[0,0]), ',',self.mu+z_crit*np.sqrt(self.variance[0,0]), ']')
             print('sigma =', self.sigma,'    ','[', self.sigma-z_crit*np.sqrt(self.variance[0,0]), ',',self.sigma+z_crit*np.sqrt(self.variance[0,0]), ']')
-        return [(self.xi, self.xi-z_crit*np.sqrt(self.variance[0,0]), self.xi+z_crit*np.sqrt(self.variance[0,0])),(self.mu, self.mu-z_crit*np.sqrt(self.variance[1,1]), self.mu+z_crit*np.sqrt(self.variance[1,1])),(self.sigma, self.sigma-z_crit*np.sqrt(self.variance[1,1]), self.sigma+z_crit*np.sqrt(self.variance[1,1]))]
+        return [(self.xi, self.xi-z_crit*np.sqrt(self.variance[0,0]), self.xi+z_crit*np.sqrt(self.variance[0,0])),(self.mu, self.mu-z_crit*np.sqrt(self.variance[1,1]), self.mu+z_crit*np.sqrt(self.variance[1,1])),(self.sigma, self.sigma-z_crit*np.sqrt(self.variance[2,2]), self.sigma+z_crit*np.sqrt(self.variance[2,2]))]
     
     def log_likelihood(self, patience = 0.0001):
         '''
