@@ -241,7 +241,7 @@ class GEV:
         if confidence == False:
             return zp
         else:
-            delta_z = np.array([1, -xi**(-1)*(1-y**(-xi)),sigma*xi**(-2)*(1-y**(-xi))-sigma*xi**(-1)*y**(-xi)*np.log(y)])
+            delta_z = np.array([sigma*xi**(-2)*(1-y**(-xi))-sigma*xi**(-1)*y**(-xi)*np.log(y), 1, -xi**(-1)*(1-y**(-xi))])
             part_1 = variance.dot(delta_z.transpose())
             variance_return = delta_z.dot(part_1)
             
