@@ -123,7 +123,7 @@ def variance(data, full_data, xi, sigma, prob, patience = 0.0001):
 
 class GeneralizedPareto:
     '''
-    Model a distribuin above a threshold (i.e. of form (data-threshold|data>thresholh) using a 2-parameter the generalized Pareto family, based on Pickands–Balkema–De Haan theorem, where we take the definition given by scipy.stats.genextreme.
+    Model a distribuin above a threshold (i.e. of form (data-threshold|data>threshold) using a 2-parameter the generalized Pareto family, based on Pickands–Balkema–De Haan theorem, where we take the definition given by scipy.stats.genextreme.
     Input: data: dataset, supposed to be modeled by generalized Pareto family; thresholh: value for which picking the threshold, see genpareto.mean_residual or genpareto.choose_threshold for choosing a good value of threshold; patience = 0.0001: value in which we take the xi=0, that is, if abs(xi)<0.0001, we take xi = 0 (so the distribution comes from a Gubel family).
     '''
     def __init__(self, data, threshold, patience = 0.0001):
@@ -290,3 +290,61 @@ class GeneralizedPareto:
         plt.scatter(H_model, order_data, color = 'red', marker =  'x')
         plt.plot([min(H_model),max(H_model)],[min(H_model),max(H_model)], linestyle='dashed', linewidth=0.5)
         plt.title('Quantile Plot')
+
+def mean_residual(data, min_value = 0, mesh = 100):
+    '''
+    Plots the mean residual plot for a dataset, which should help picking a good threshold value as the beginning of linear regions, together with the 1 standard deviation interval value
+    Inputs: data: dataset to be tested; min_value = 0, minimum threshold value to be tested, the maximum is max(data); mesh = 100: number of threshold points to be used in making the plot
+    '''
+    means = []
+    stdvs = []
+    us = np.linspace(min_value, max(data), mesh)
+    for threshold in us:
+        filtered_data = data[data>threshold]-threshold
+        means.append(np.mean(filtered_data))
+        stdvs.append(np.std(filtered_data))
+
+    means = np.array(means)
+    stdvs = np.array(stdvs)
+    
+    plt.plot(us, means)
+    plt.plot(us, means+stdvs, linestyle='dashed', color = 'green', linewidth=0.5)
+    plt.plot(us, means-stdvs, linestyle='dashed', color = 'green', linewidth=0.5)
+    plt.title('Mean Residual Plot')
+    return
+
+def choose_threshold(data, min_value = 0, max_value = 50, mesh = 30):
+    '''
+    Plots some figures that help choosing perfect values of threshold. These are plots of the shape value xi and of a changed scale value sigma_st = sigma-xi*threshold. If some value of threshold u_0 will produce a filtered dataset that respects the generalized Pareto family, then these two quantities should be kept approximately constant for thresholds us bigger than u_0 (although not for too big values of u, as we break assymptotic convergence at these levels). Also plots 1 standard deviation error bars.
+    Inputs: data: dataset to be tested; min_value = 0, minimum threshold value to be tested; max_value = 50: maximum threshold value to be tested; mesh = 100: number of threshold points to be used in making the plot
+    '''
+    xi = []
+    stdvs_xi = []
+    sigma_st = []
+    stdvs_sigma = []
+    
+    us = np.linspace(min_value, max_value, mesh)
+    
+    for threshold in us:
+        model = GeneralizedPareto(data, threshold)
+        variance = model.variance
+        stdvs_xi.append(np.sqrt(variance[1,1]))
+        xi.append(model.xi)
+        
+        sigma_st.append(model.sigma-model.xi*threshold)
+        #to find the error bars on sigma_st, we must use the delta method to calculate its variance (here, delta_sigma = [-u,1]) for only xi and sigma dependece, respectively
+        #notice that we need only the variance matrix for the xi and sigma parameters
+        variance_matrix = variance[1:3,1:3]
+        det_sigma_st = np.array([-threshold, 1])
+        part_1 = variance_matrix.dot(det_sigma_st.transpose())
+        variance_return = det_sigma_st.dot(part_1)
+        stdvs_sigma.append(np.sqrt(variance_return))
+        
+    f, (ax1, ax2) = plt.subplots(1,2, figsize=(15, 7))
+    ax1.plot(us, xi)
+    ax1.errorbar(us,xi, yerr=stdvs_xi, alpha = 0.3)
+    ax1.title.set_text('Shape')
+    ax2.plot(us, sigma_st)
+    ax2.errorbar(us, sigma_st, yerr=stdvs_sigma, alpha = 0.3)
+    ax2.title.set_text('Modified Scale')
+    return 
